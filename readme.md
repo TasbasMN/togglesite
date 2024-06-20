@@ -21,11 +21,11 @@ This Bash script provides a simple way to block and unblock websites using iptab
 
 ## Usage
 
-'''
+```
 bash
 ./togglesite.sh <website>
 ./togglesite.sh --list
-'''
+```
 
 - To block a website: ./togglesite.sh example
 - To unblock a website: Run the same command again
