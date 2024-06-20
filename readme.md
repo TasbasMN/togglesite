@@ -21,9 +21,9 @@ This Bash script provides a simple way to block and unblock websites using iptab
 
 ## Usage
 
-bash
+'''bash
 ./togglesite.sh <website>
-./togglesite.sh --list
+./togglesite.sh --list'''
 
 
 - To block a website: ./togglesite.sh example
