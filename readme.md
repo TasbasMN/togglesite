@@ -52,12 +52,13 @@ Note: The script automatically appends ".com" to the provided website name.
 The script includes a 5-second delay when unblocking a website. To change this delay:
 
 1. Open the script in a text editor.
-2. Find the line delay=5 # 5 seconds delay
+2. Find the line delay=5 
 3. Change the number 5 to your desired delay in seconds.
 4. Save the file and run the script as usual.
 
-For example, to set a 10-second delay, change the line to:
-delay=10 # 10 seconds delay
+For example, to set a 5 minute delay, change the line to:
+
+delay=300
 
 
 ## Permissions
