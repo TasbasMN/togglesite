@@ -58,8 +58,9 @@ The script includes a 5-second delay when unblocking a website. To change this d
 
 For example, to set a 5 minute delay, change the line to:
 
+```
 delay=300
-
+```
 
 ## Permissions
 
