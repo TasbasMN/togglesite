@@ -1,105 +1,69 @@
 #!/bin/bash
 
-# File to store domain and IP mappings
-MAPPING_FILE="/tmp/domain_ip_mappings.txt"
+BLOCKED_SITES_FILE="/tmp/blocked_sites.txt"
 
-# Function to resolve domain to IP address
-resolve_domain() {
-    domain=$1
-    ip=$(dig +short A $domain | head -n 1)
-    if [ -z "$ip" ]; then
-        echo "Could not resolve domain: $domain"
-        exit 1
+block_website() {
+    website=$1
+    ips=$(dig +short $website)
+    if [ -n "$ips" ]; then
+        for ip in $ips; do
+            sudo iptables -A OUTPUT -d $ip -j DROP
+        done
+        echo "$website" >> $BLOCKED_SITES_FILE
+        echo "Website $website (IPs: $ips) has been blocked."
+    else
+        echo "Could not resolve IP for $website"
     fi
-    echo $ip
 }
 
-# Function to check if an IP address is currently blocked
-is_blocked() {
-    ip=$1
-    sudo iptables -L INPUT -v -n | grep "$ip" > /dev/null 2>&1
-    return $?
-}
+unblock_website() {
+    website=$1
+    delay=5  # 5 seconds delay
 
-# Function to block access to an IP address
-block_ip() {
-    ip=$1
-    domain=$2
-    echo "Blocking access to $domain ($ip)..."
-    sudo iptables -A INPUT -s $ip -j DROP
-    echo "$domain $ip" >> $MAPPING_FILE
-    echo "Access to $domain ($ip) has been blocked."
-}
-
-# Function to unblock access to an IP address
-unblock_ip() {
-    ip=$1
-    domain=$2
-    echo "Unblocking $domain ($ip) in 5 minutes..."
-    for i in {300..1}; do
-        echo -ne "Time remaining: $i seconds\r"
+    echo "Unblocking $website in $delay seconds..."
+    for ((i=delay; i>0; i--)); do
+        echo -ne "Time remaining: $i seconds...\r"
         sleep 1
     done
-    echo -ne "\nTime is up! Unblocking the site now.\n"
-    sudo iptables -D INPUT -s $ip -j DROP
-    grep -v "$domain $ip" $MAPPING_FILE > /tmp/mappings.tmp && mv /tmp/mappings.tmp $MAPPING_FILE
-    echo "Access to $domain ($ip) has been unblocked."
-}
+    echo -e "\nUnblocking $website now."
 
-# Function to unblock all sites immediately
-unblock_all() {
-    echo "Unblocking all sites immediately..."
-    sudo iptables -F INPUT
-    > $MAPPING_FILE
-    echo "All sites have been unblocked."
-}
-
-# Function to list currently blocked IP addresses and their domains
-list_blocked() {
-    echo "Currently blocked domains and IP addresses:"
-    if [ -f $MAPPING_FILE ]; then
-        while read -r line; do
-            domain=$(echo $line | awk '{print $1}')
-            ip=$(echo $line | awk '{print $2}')
-            echo "$domain ($ip)"
-        done < $MAPPING_FILE
+    ips=$(dig +short $website)
+    if [ -n "$ips" ]; then
+        for ip in $ips; do
+            sudo iptables -D OUTPUT -d $ip -j DROP 2>/dev/null
+        done
+        sed -i "/$website/d" $BLOCKED_SITES_FILE
+        echo "Website $website (IPs: $ips) has been unblocked."
     else
-        echo "No blocked sites found."
+        echo "Could not resolve IP for $website"
     fi
 }
 
-# Main script logic
-if [ -z "$1" ]; then
-    echo "Usage: $0 <domain> | --unblockall | --list"
+show_blocked_sites() {
+    echo "Currently blocked sites:"
+    if [ -f $BLOCKED_SITES_FILE ]; then
+        cat $BLOCKED_SITES_FILE
+    else
+        echo "No sites are currently blocked."
+    fi
+}
+
+if [ "$1" = "--list" ]; then
+    show_blocked_sites
+    exit 0
+fi
+
+site="$1"
+
+if [ -z "$site" ]; then
+    echo "Usage: $0 <website> or $0 --list"
     exit 1
 fi
 
-if [ "$1" == "--unblockall" ]; then
-    unblock_all
-    exit 0
-fi
+site="${site}.com"
 
-if [ "$1" == "--list" ]; then
-    list_blocked
-    exit 0
-fi
-
-domain=$1
-
-# Add www prefix if not present
-if [[ ! $domain =~ ^www\. ]]; then
-    domain="www.$domain"
-fi
-
-ip=$(resolve_domain $domain)
-
-# If the resolved IP is a CNAME, resolve it to an IP address
-if [[ $ip == *.*.*.* ]]; then
-    ip=$(getent ahosts $ip | grep "STREAM" | awk '{print $1}' | head -n 1)
-fi
-
-if is_blocked "$ip"; then
-    unblock_ip "$ip" "$domain"
+if grep -q "$site" $BLOCKED_SITES_FILE 2>/dev/null; then
+    unblock_website $site
 else
-    block_ip "$ip" "$domain"
+    block_website $site
 fi

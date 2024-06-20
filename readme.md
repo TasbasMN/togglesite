@@ -1,52 +1,73 @@
-# ToggleSite
+# Website Blocker
 
-ToggleSite is a Bash script to manage the blocking and unblocking of IP addresses associated with domain names using `iptables`. It's like a bouncer for your internet, deciding who gets in and who stays out. Perfect for those moments when you just can't resist scrolling on x dot com.
+## Description
 
-## Prerequisites
+This Bash script provides a simple way to block and unblock websites using iptables. It resolves the IP addresses of the specified website and adds rules to iptables to block outgoing traffic to those IPs. The script also maintains a list of blocked websites for easy management.
 
-- `dig` command (part of the `dnsutils` package) - because we need to dig up those IPs!
-- `getent` command (part of the `glibc` package) - get 'em, tiger!
-- `iptables` command - the ultimate gatekeeper.
-- `sudo` privileges - because power comes with responsibility (and a password).
+## Features
+
+- Block websites by domain name
+- Unblock previously blocked websites
+- List currently blocked websites
+- Automatic IP resolution for domain names
+- Delay mechanism for unblocking to prevent accidental unblocks
+
+## Requirements
+
+- Bash shell
+- dig command (usually part of the dnsutils package)
+- iptables (requires root privileges)
+- sudo access for modifying iptables rules
 
 ## Usage
 
-```bash
-./togglesite.sh <domain> | --unblockall | --list
-```
+bash
+./website_blocker.sh <website>
+./website_blocker.sh --list
 
-### Arguments
 
-- `<domain>`: The domain name to block or unblock. If the domain is not prefixed with `www.`, it will be added automatically. Because who doesn't love a good prefix?
-- `--unblockall`: Unblocks all currently blocked IP addresses immediately. It's like a get-out-of-jail-free card for websites.
-- `--list`: Lists currently blocked domains and their IP addresses. Roll call time!
+- To block a website: ./website_blocker.sh example
+- To unblock a website: Run the same command again
+- To list blocked websites: ./website_blocker.sh --list
 
-### Examples
+Note: The script automatically appends ".com" to the provided website name.
 
-- To block or unblock a domain:
-  ```bash
-  ./togglesite.sh example.com
-  ```
+## How it works
 
-- To unblock all blocked IP addresses immediately:
-  ```bash
-  ./togglesite.sh --unblockall
-  ```
+1. When blocking a website:
+ - Resolves the IP addresses for the given domain
+ - Adds iptables rules to drop outgoing traffic to these IPs
+ - Adds the website to the blocked sites list
 
-- To list currently blocked domains and IP addresses:
-  ```bash
-  ./togglesite.sh --list
-  ```
+2. When unblocking a website:
+ - Waits for 5 seconds before unblocking (with a countdown)
+ - Removes the corresponding iptables rules
+ - Removes the website from the blocked sites list
 
-## How It Works
+3. The list of blocked websites is stored in /tmp/blocked_sites.txt
 
-1. **resolve_domain**: Resolves a domain name to its corresponding IP address using the `dig` command. It's like a treasure hunt for IPs!
-2. **is_blocked**: Checks if a given IP address is currently blocked using `iptables`. Are you in or out?
-3. **block_ip**: Blocks access to a given IP address using `iptables` and stores the domain-IP mapping in a file. No entry for you!
-4. **unblock_ip**: Unblocks access to a given IP address after a delay of 5 minutes and removes the domain-IP mapping from the file. Time's up, you're free to go!
-5. **unblock_all**: Unblocks all currently blocked IP addresses immediately and clears the mapping file. Party time, everyone gets in!
-6. **list_blocked**: Lists currently blocked domains and their IP addresses from the mapping file. Let's see who's on the naughty list.
+## Permissions
 
-## License
+This script requires sudo privileges to modify iptables rules. Make sure to run it with appropriate permissions.
 
-This project is licensed under the MIT License. Because sharing is caring, even for control freaks.
+## Disclaimer
+
+Use this script responsibly. Blocking websites may have unintended consequences and could affect system or network functionality. Always ensure you have permission to modify network settings on the system you're using.
+
+## Contributing
+
+Contributions, issues, and feature requests are welcome. Feel free to check issues page if you want to contribute.
+
+# The 'Do Whatever You Want' License (DWYW)
+
+Copyright (c) 2024 Nazif
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+1. You can do whatever you want with this Software.
+2. The author is not responsible for anything you do with this Software.
+3. The author provides no warranties or guarantees whatsoever.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Use at your own risk. The author bears no responsibility for any consequences resulting from the use, modification, or distribution of this Software.
