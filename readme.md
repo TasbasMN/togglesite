@@ -22,13 +22,13 @@ This Bash script provides a simple way to block and unblock websites using iptab
 ## Usage
 
 bash
-./website_blocker.sh <website>
-./website_blocker.sh --list
+./togglesite.sh <website>
+./togglesite.sh --list
 
 
-- To block a website: ./website_blocker.sh example
+- To block a website: ./togglesite.sh example
 - To unblock a website: Run the same command again
-- To list blocked websites: ./website_blocker.sh --list
+- To list blocked websites: ./togglesite.sh --list
 
 Note: The script automatically appends ".com" to the provided website name.
 
