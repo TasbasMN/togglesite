@@ -10,7 +10,7 @@ This Bash script provides a simple way to block and unblock websites using iptab
 - Unblock previously blocked websites
 - List currently blocked websites
 - Automatic IP resolution for domain names
-- Delay mechanism for unblocking to prevent accidental unblocks
+- Delay mechanism for unblocking to deter you from wasting time
 
 ## Requirements
 
